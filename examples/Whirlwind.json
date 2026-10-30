@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "name": "Whirlwind",
+  "parts": [
+    {
+      "kind": "plate",
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "5ec25e44ae"
+    },
+    {
+      "kind": "big_wheel",
+      "x": -0.92,
+      "y": -0.08,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "3bac7514a2"
+    },
+    {
+      "kind": "big_wheel",
+      "x": 0.92,
+      "y": -0.08,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "4582de34ea"
+    },
+    {
+      "kind": "battery",
+      "x": -0.45,
+      "y": 0.34,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "577cd14e7b"
+    },
+    {
+      "kind": "beam",
+      "x": 1.18,
+      "y": 0.18,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "2ff1851316"
+    },
+    {
+      "kind": "spinner",
+      "x": 1.65,
+      "y": 0.18,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 10,
+      "torque": 50,
+      "direction": 1,
+      "control": "arm",
+      "grip": 1.0,
+      "uid": "691397b27d"
+    }
+  ]
+}

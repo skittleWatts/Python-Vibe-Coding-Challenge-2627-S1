@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "name": "Kickback",
+  "parts": [
+    {
+      "kind": "plate",
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "20b325b7de"
+    },
+    {
+      "kind": "big_wheel",
+      "x": -0.92,
+      "y": -0.08,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 30,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "01739a0190"
+    },
+    {
+      "kind": "big_wheel",
+      "x": 0.92,
+      "y": -0.08,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 30,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "78542af251"
+    },
+    {
+      "kind": "battery",
+      "x": -0.4,
+      "y": 0.34,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "883c68e600"
+    },
+    {
+      "kind": "wedge",
+      "x": 1.38,
+      "y": 0.02,
+      "angle": 0,
+      "scale": 0.7,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "e5b8ec25e4"
+    },
+    {
+      "kind": "flipper",
+      "x": 1.5,
+      "y": 0.04,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 4,
+      "torque": 60,
+      "direction": 1,
+      "control": "arm",
+      "grip": 1.0,
+      "uid": "3e15912868"
+    }
+  ]
+}

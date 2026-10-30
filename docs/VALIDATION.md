@@ -1,6 +1,10 @@
 # Validation record
 
-Updated **29 October 2026** for ScrapLab **1.1.0**.
+ScrapLab **1.2.0** update: **49 tests passed** in the repository's existing environment. The additional checks cover spinner rotation/reaction and torque caps, flipper stops and reversal, mirrored weapon mounts, real scored contact, zero points for floor contact, contact cooldown, all three rivals approaching, knockout bonuses, time-limit decisions, saved battle records, lobby selection, and counting completed matches only once. The original ramp experiment checks still pass.
+
+The 1.2 interface was inspected at 1280x800, including both new weapons, the lobby, live scores and final rewards. The game launched from PyCharm's existing green Run button. A desktop match exposed a grounded flipper approach; the controller was corrected and a regression test now checks all three opponents make progress toward the player. The final simulated Whirlwind-versus-Copperhead match with held forward/spin controls ended 45–30 on points. This is a measured run, not a guaranteed player outcome. Setup scripts, dependency pins, launcher and IDE configuration were left unchanged.
+
+The earlier **29 October 2026 / 1.1.0** validation record follows.
 
 ## Tested environment
 

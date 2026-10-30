@@ -201,6 +201,42 @@ class AppTests(unittest.TestCase):
         self.assertTrue(app.hold_buttons)
         self.assertTrue(all(not b[3] for b in app.hold_buttons))
 
+    def test_battle_lobby_selection_and_completed_match_count_once(self):
+        app = self.app
+        app.editor.replace(preset("Whirlwind"))
+        self.key(pg.K_F7)
+        self.assertEqual(app.modal, "battle")
+        self.click((850, 370))
+        self.assertEqual(app.rival_name, "Kickback")
+        self.key(pg.K_RETURN)
+        self.assertEqual(app.sim.opponent_name, "Kickback")
+        app.sim.time = 3
+        for body in app.sim.opponent.bodies:
+            body.position += (0, -10)
+        app.update(.02)
+        app.render()
+        self.assertEqual(app.battle_record.wins, 1)
+        self.assertEqual(app.battle_record.best, 250)
+        app.update(.1)
+        app.finish_attempt()
+        app.reset()
+        self.assertEqual(app.battle_record.wins, 1)
+        self.assertEqual(app.sim.battle.points, [0, 0])
+
+    def test_weapon_palette_fits_and_new_presets_render(self):
+        app = self.app
+        for name in ("Whirlwind", "Kickback"):
+            app.choose_preset(name)
+            app.render()
+            self.assertEqual(len(app.palette), 13)
+            self.assertTrue(all(rect.bottom < 684 for rect, _ in app.palette))
+            app.editor.selected = app.editor.blueprint.parts[-1].uid
+            app.render()
+            app.start("practice")
+            app.update(.1)
+            app.render()
+            app.workshop()
+
 
 if __name__ == "__main__":
     unittest.main()

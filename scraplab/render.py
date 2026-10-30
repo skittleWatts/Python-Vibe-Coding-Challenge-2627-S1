@@ -161,12 +161,19 @@ def draw_part(p, part, camera, shape=None, selected=False, invalid=False, tint=N
             p.text("CELL", (cx, cy+10), 11, BG, True, True)
         elif part.kind == "ballast":
             p.text("Fe", center, 16, BG, True, True)
-        elif part.kind in {"arm", "pivot"} and len(pts) == 4:
+        elif part.kind in {"arm", "pivot", "flipper", "spinner"} and len(pts) == 4:
             a = ((pts[0][0]+pts[3][0])/2, (pts[0][1]+pts[3][1])/2)
             b = ((pts[1][0]+pts[2][0])/2, (pts[1][1]+pts[2][1])/2)
             p.line(a, b, (102, 66, 45) if part.kind == "arm" else (91, 75, 126), max(1, round(camera.scale*.025)))
-        if spec.joint in {"motor", "pivot"} and not shape:
-            pg.draw.circle(p.s, GOLD if spec.joint == "motor" else PURPLE, camera.point(anchor(part)), 7)
+            if part.kind == "spinner":
+                pg.draw.circle(p.s, BG, tuple(map(round, center)), max(4, round(camera.scale*.085)))
+                pg.draw.circle(p.s, GOLD, tuple(map(round, center)), max(2, round(camera.scale*.04)))
+                for end in (a, b):
+                    p.line((end[0]*.85+center[0]*.15, end[1]*.85+center[1]*.15), end, GOLD, max(3, round(camera.scale*.09)))
+            elif part.kind == "flipper":
+                p.line(pts[1], pts[2], GOLD, max(3, round(camera.scale*.06)))
+        if spec.joint in {"motor", "pivot", "rotor"} and not shape:
+            pg.draw.circle(p.s, GOLD if spec.joint in {"motor", "rotor"} else PURPLE, camera.point(anchor(part)), 7)
     if selected:
         if spec.joint == "axle":
             box = pg.Rect(pos[0]-r-9, pos[1]-r-9, 2*r+18, 2*r+18)
@@ -225,7 +232,7 @@ def draw_robot(p, robot, camera, engineering=False, rival=False):
         pg.draw.circle(p.s, GOLD if part.kind != "pivot" else PURPLE, pos, 5)
         if engineering:
             pg.draw.circle(p.s, GOLD, pos, 10, 1)
-            if part.kind in {"arm", "pivot"}:
+            if part.kind in {"arm", "pivot", "flipper"}:
                 origin = joint.a.local_to_world(joint.anchor_a)
                 base = robot.body.angle+math.radians(part.angle)
                 radius = .48

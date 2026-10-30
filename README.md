@@ -35,7 +35,7 @@ The challenge allows AI assistance. This implementation was developed with AI as
 
 Double-click `launch.cmd`. It uses `.venv\Scripts\python.exe` and starts the game. Internet access is not needed after setup. There are no external assets, accounts, services, AI models, or audio-device requirements.
 
-To make the game easier to reach, create a desktop shortcut to `launch.cmd`; keep the launcher in its project folder. This is **version 1.1**, with arm practice, visible motor feedback, mouse controls and automatic draft recovery.
+To make the game easier to reach, create a desktop shortcut to `launch.cmd`; keep the launcher in its project folder. This is **version 1.2: Battle Works**, adding spinner and flipper weapons, three opponents, impact scoring and a saved battle record. See [the battle guide](docs/BATTLE_WORKS.md).
 
 The verified environment is **Windows / CPython 3.14.7 / pygame-ce 2.5.8 / Pymunk 7.3.1**. Python 3.11+ is the intended minimum, but other Python/OS combinations have not been tested here.
 
@@ -132,7 +132,7 @@ The test ground has flat floor, a roughly 25° incline, a summit gate, a descent
 
 The benchmark runs 12 simulated seconds: settle 0.6 s, increase the drive command over 0.8 s, then hold forward. Manual drive input is ignored only during this explicitly labelled benchmark. Its outcome still comes entirely from the physics. Free Test is manually controlled. The notebook warns if the two attempts have different scenarios or durations. Export keeps the last 20 recorded attempts plus the current run as JSON/CSV in `lab_notes/`; exports replace the previous export files.
 
-The arena starts with a 2-second countdown. Copperhead uses the same parts, physics builder, battery budget and motor limits as the player. It steers toward you and away from the arena edges. Win by making its total centre of mass fall below -2 m, or keeping its chassis more than 100° from upright for 3 continuous seconds. After 45 seconds of play the result is a draw. Both robots can lose simultaneously. There are no hidden health bars or damage multipliers.
+Press **F7 / Arena** to choose Copperhead, Whirlwind or Kickback, then **Enter** to start. After a 2-second countdown, clean robot impacts earn 10–30 points, with +15 for a weapon hit. Win immediately by making the rival's centre of mass fall below -2 m, or keeping its chassis more than 100° from upright for 3 continuous seconds; this awards +250 points. After 45 seconds, the higher score wins and equal scores draw. Rivals use the same parts, physics, power budget and scoring as you. Your wins, best score, streak and cosmetic career rank are saved locally. There are no hidden health bars or damage multipliers. See [Battle Works](docs/BATTLE_WORKS.md) for the precise scoring rules.
 
 ### Keeping your work
 
@@ -191,7 +191,7 @@ The actual desktop drag test at y = 0.40 m also succeeded: **18.25 m**, **25.5°
 - **Power abstraction:** each attached battery allows 120 N m of total configured motor torque. If demand exceeds this, every enabled motor's cap is scaled proportionally. No battery means no powered motors. A zero command applies a finite motor brake; control **OFF** disables that motor and lets it freewheel. There is no voltage/current/heat/energy depletion simulation. The battery is intentionally heavy to make balance easy to demonstrate.
 - **Contacts:** same-robot parts ignore each other's collisions as if mounted in adjacent depth layers. They still collide with the terrain, weights and the other robot. Structural mounting overlap is intentional. An arm can pass through its own chassis in this approximation.
 - **Measurements:** live motor torque is the solver's last angular impulse divided by the fixed timestep: a load estimate, not a stress analysis. Teal dots show solved contacts; they are not force vectors. Sparks are emitted from measured first-contact impulses above a threshold. No fabricated failure explanation is generated.
-- **Scope:** 2D planar mechanics with simplified material densities, Coulomb friction and constant torque caps. There is no 3D chassis width, electrical circuit simulation, tyre deformation, suspension, springs, sliders, spinners, destructible parts, or breakable welds. Physical tipping and ring-outs are the failure model. Sound is optional and the game works without audio hardware.
+- **Scope:** 2D planar mechanics with simplified material densities, Coulomb friction and constant torque caps. There is no 3D chassis width, electrical circuit simulation, tyre deformation, suspension, springs, sliders, destructible parts, or breakable welds. Physical tipping and ring-outs are the failure model; arena points measure qualifying impacts. The spinner bar uses a centre pivot without angular stops. Sound is optional and the game works without audio hardware.
 - **Editor limits:** uniform scaling rather than arbitrary polygon drawing; automatic rigid welding and integrated axle modules rather than editable connection graphs. No attachment chains on moving arms. Use Home / Fit Build for large or off-centre designs. Automatic recovery retains one draft; named saves retain individual designs.
 - **UI:** designed at 1280x800 and scaled with letterboxing when resized. Input mapping is tested at 960x600; a 1280x800 or larger display is recommended. Fonts fall back to installed system fonts.
 

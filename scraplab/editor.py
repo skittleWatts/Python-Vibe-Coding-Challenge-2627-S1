@@ -1,6 +1,6 @@
 """Workshop interaction state, independent of window layout and physics."""
 from .blueprint import Blueprint, Part, MAX_PARTS
-from .parts import contains
+from .parts import contains, WEAPONS
 import uuid
 
 
@@ -53,7 +53,9 @@ class Editor:
         if len(self.blueprint.parts) >= MAX_PARTS:
             return False
         self.checkpoint()
-        part = Part(kind, *point, control="arm" if kind == "arm" else "drive", speed=2 if kind == "arm" else 5)
+        part = Part(kind, *point, control="arm" if kind in WEAPONS else "drive",
+                    speed=10 if kind == "spinner" else 3 if kind == "flipper" else 2 if kind == "arm" else 5,
+                    torque=70 if kind == "flipper" else 40 if kind == "spinner" else 35)
         self.blueprint.parts.append(part)
         self.selected = part.uid
         self.drag = (0, 0, True)

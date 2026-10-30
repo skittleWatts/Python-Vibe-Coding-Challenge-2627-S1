@@ -6,7 +6,8 @@ import math
 import time
 import pygame as pg
 from .blueprint import preset, validate, save, load, Blueprint
-from .parts import CATALOG, MATERIALS, mass, dimensions, anchor
+from .parts import CATALOG, MATERIALS, WEAPONS, mass, dimensions, anchor
+from .battle import BattleRecord
 from .editor import Editor
 from .physics import Simulation
 from .scenarios import BENCHMARK_SECONDS
@@ -25,7 +26,7 @@ class App:
         pg.display.init()
         pg.font.init()  # Audio is optional; no mixer initialization required.
         self.window = pg.display.set_mode(size, pg.RESIZABLE)
-        pg.display.set_caption("ScrapLab 1.1: Build. Break. Understand.")
+        pg.display.set_caption("ScrapLab 1.2: Battle Works")
         icon = pg.Surface((32, 32), pg.SRCALPHA)
         pg.draw.rect(icon, TEAL, (3, 8, 26, 16), border_radius=4)
         pg.draw.circle(icon, GOLD, (8, 24), 5)
@@ -34,6 +35,9 @@ class App:
         self.surface = pg.Surface(SIZE)
         self.p = Painter(self.surface)
         self.persist = persist
+        self.battle_record = BattleRecord.load(ROOT) if persist else BattleRecord()
+        self.arena_recorded = False
+        self.rival_name = "Copperhead"
         recovered, recovery_error = recover(ROOT) if persist else (None, "")
         self.editor = Editor(recovered or preset("Tall order"))
         self.recovered = recovered is not None
@@ -149,7 +153,7 @@ class App:
             return
         self.finish_attempt()
         try:
-            self.sim = Simulation(self.editor.blueprint, scenario)
+            self.sim = Simulation(self.editor.blueprint, scenario, opponent_name=self.rival_name)
         except ValueError as exc:
             self.toast(str(exc))
             return
@@ -158,6 +162,7 @@ class App:
         self.keys.clear()
         self.held_control = None
         self.last_result = ""
+        self.arena_recorded = False
         self.last_impact = -1
         self.focus_paused = False
         self.control_nudge = None
@@ -168,12 +173,24 @@ class App:
         self.toast("AUTOMATIC TEST: manual controls are disabled. Use Free Play to operate the arm." if scenario == "benchmark" else "You are in control. Hold A / D to drive; E / Up and Q / Down operate the arm.")
 
     def finish_attempt(self):
+        self.record_battle()
         if self.sim and not self.recorded and self.sim.time > .2:
             result = self.sim.telemetry.to_dict()
             self.history.append(result)
             self.history = self.history[-20:]
             self.previous = result
             self.recorded = True
+
+    def record_battle(self):
+        if not self.sim or self.sim.scenario != "arena" or not self.sim.result or self.arena_recorded:
+            return
+        self.arena_recorded = True
+        self.battle_record.complete(self.sim.winner, self.sim.battle.points[0])
+        if self.persist:
+            try:
+                self.battle_record.save(ROOT)
+            except OSError:
+                self.toast("Battle counted this session; the record could not be saved to disk.")
 
     def workshop(self):
         self.finish_attempt()
@@ -335,6 +352,8 @@ class App:
                 self.input = ""
             elif e.key == pg.K_RETURN:
                 self.save_named()
+        elif self.modal == "battle" and e.key == pg.K_RETURN:
+            self.start("arena")
         elif e.key in (pg.K_RETURN, pg.K_F1):
             self.modal = None
 
@@ -372,7 +391,7 @@ class App:
             elif e.key == pg.K_F6:
                 self.start("benchmark")
             elif e.key == pg.K_F7:
-                self.start("arena")
+                self.show_modal("battle")
         else:
             if e.key == pg.K_SPACE:
                 self.toggle_pause()
@@ -409,6 +428,7 @@ class App:
                 self.control_nudge = (channel, value, remaining) if remaining > 0 else None
         if self.sim:
             if self.sim.result and self.sim.result != self.last_result:
+                self.record_battle()
                 self.audio.play("success" if self.sim.telemetry.complete or self.sim.result == "YOU WIN" else "finish")
                 self.last_result = self.sim.result
                 self.held_control = None
@@ -464,7 +484,7 @@ class App:
         p.text("S", (43, 37), 28, BG, True, True)
         p.text("SCRAPLAB", (75, 12), 28, INK, True)
         p.text("BUILD. BREAK. UNDERSTAND.", (76, 45), 11, TEAL, True)
-        for x, label, mode, action in [(553, "01  WORKSHOP", "workshop", self.workshop), (732, "02  TEST GROUND", "test", lambda: self.start("test")), (929, "03  ARENA", "arena", lambda: self.start("arena"))]:
+        for x, label, mode, action in [(553, "01  WORKSHOP", "workshop", self.workshop), (732, "02  TEST GROUND", "test", lambda: self.start("test")), (929, "03  ARENA", "arena", lambda: self.show_modal("battle"))]:
             self.button((x, 21, 169 if mode != "test" else 187, 36), label, action, active=self.mode == mode)
         self.button((1113, 21, 142, 36), "FIELD GUIDE  ?", lambda: setattr(self, "modal", "intro"))
 
@@ -486,7 +506,7 @@ class App:
         p.text("PART INSPECTOR", (1020, 160), 12, MUTED, True)
         p.panel((24, 180, 208, 504))
         for i, (kind, spec) in enumerate(CATALOG.items()):
-            rect = pg.Rect(32, 190+i*43, 192, 38)
+            rect = pg.Rect(32, 188+i*37, 192, 35)
             hover = rect.collidepoint(self.mouse)
             p.panel(rect, PANEL2 if hover else PANEL, TEAL if hover else None, 5)
             if spec.joint == "axle":
@@ -494,9 +514,9 @@ class App:
                 pg.draw.circle(self.surface, GOLD, (49, rect.centery), 4)
             else:
                 pg.draw.rect(self.surface, spec.color, (39, rect.centery-6, 20, 12), border_radius=2)
-            p.text(spec.label, (68, rect.y+4), 15, INK, True)
-            label = {"weld": "RIGID / WELD", "axle": "DRIVEN AXLE", "motor": "MOTOR PIVOT", "pivot": "FREE PIVOT"}[spec.joint]
-            p.text(label, (68, rect.y+23), 9, MUTED)
+            p.text(spec.label, (68, rect.y+2), 14, INK, True)
+            label = {"weld": "RIGID / WELD", "axle": "DRIVEN AXLE", "motor": "POWERED WEAPON", "pivot": "FREE PIVOT", "rotor": "360 DEG / WEAPON"}[spec.joint]
+            p.text(label, (68, rect.y+21), 9, GOLD if kind in {"spinner", "flipper"} else MUTED)
             self.palette.append((rect, kind))
         grid(p, self.edit_camera, True)
         self.surface.set_clip(self.edit_camera.rect)
@@ -523,7 +543,7 @@ class App:
         self.button((252, 698, 151, 36), "GRID  " + ("ON" if ed.snap else "OFF"), lambda: setattr(ed, "snap", not ed.snap), active=ed.snap, tip="G toggles 0.10 m grid snapping. Mouse wheel zooms.")
         self.button((413, 698, 196, 36), "ENGINEERING   TAB", lambda: setattr(self, "engineering", not self.engineering), active=self.engineering)
         self.button((619, 698, 180, 36), "FREE TEST   F5", lambda: self.start("test"), GOLD)
-        self.button((809, 698, 189, 36), "ENTER ARENA   F7", lambda: self.start("arena"), GOLD)
+        self.button((809, 698, 189, 36), "BATTLE LOBBY   F7", lambda: self.show_modal("battle"), GOLD)
         p.text("DRAG TO BUILD", (25, 702), 12, TEAL, True)
         p.text("Scroll canvas to zoom", (25, 721), 12, MUTED)
 
@@ -554,7 +574,7 @@ class App:
         p.text(f"{mass(part):.2f} kg  /  {w:.2f} x {h:.2f} m", (1035, 224), 13, MUTED)
         self.adjust_row(252, "SIZE MULTIPLIER", "scale", part.scale, .1, .5, 1.8, "x")
         self.adjust_row(303, "ANGLE", "angle", part.angle, 15, -180, 180, " deg")
-        if spec.joint in ("axle", "motor"):
+        if spec.joint in ("axle", "motor", "rotor"):
             self.adjust_row(354, "TARGET MOTOR SPEED", "speed", part.speed, .5, .5, 12, " rad/s")
             self.adjust_row(405, "TORQUE LIMIT", "torque", part.torque, 5, 0, 120, " N m")
             options = ["drive", "arm", "off"]
@@ -572,12 +592,12 @@ class App:
             p.text(f"Position  {part.x:.2f}, {part.y:.2f} m", (1035, 525), 14, MUTED)
         issue = next((message for uid, message in errors if uid == part.uid), None)
         note = "Connected. Ready for a test."
-        if part.kind == "arm":
+        if part.kind in WEAPONS:
             note = "Hold E / Up or Q / Down in Free Play or the arena." if part.control == "arm" else "This motor uses A / D." if part.control == "drive" else "Motor off. Click OFF above to change its controls."
         elif part.kind == "pivot":
             note = "Passive hinge: no controls. Use Powered lifter for a motor."
         p.wrap(issue or note, (1035, 606), 200, 12, RED if issue else TEAL, 17)
-        if part.kind in {"arm", "pivot"}:
+        if part.kind in WEAPONS or part.kind == "pivot":
             self.button((1034, 646, 207, 27), "TRY IN PRACTICE BAY", lambda: self.start("practice"), GOLD)
         self.button((1034, 682, 101, 35), "Duplicate", self.editor.duplicate)
         self.button((1145, 682, 96, 35), "Delete", self.editor.delete)
@@ -608,7 +628,10 @@ class App:
         self.hold_buttons = []
         p.panel((190, 104, 900, 626), PANEL, LINE, 18)
         self.button((1027, 123, 42, 33), "X", lambda: setattr(self, "modal", None))
-        if self.modal == "intro":
+        if self.modal == "battle":
+            from .battle_ui import draw_lobby
+            draw_lobby(self)
+        elif self.modal == "intro":
             p.text("WELCOME BACK / DRAFT RECOVERED" if self.recovered else "WELCOME TO THE SCRAPLAB", (230, 140), 12, TEAL, True)
             p.text("Good ideas need a crash test.", (230, 178), 38, INK, True)
             p.wrap("Build a robot from real working parts. Test a theory. Watch the physics. Then make it better.", (230, 242), 740, 21, MUTED, 29)
@@ -640,6 +663,9 @@ class App:
                 y = 255+i*93
                 self.button((230, y, 215, 61), name.upper(), lambda n=name: self.choose_preset(n), TEAL)
                 p.wrap(detail, (478, y+9), 535, 18, MUTED, 25)
+            p.text("NEW BATTLE BLUEPRINTS / same parts you can build with", (230, 614), 12, GOLD, True)
+            self.button((230, 647, 390, 45), "WHIRLWIND / SPINNER", lambda: self.choose_preset("Whirlwind"), GOLD)
+            self.button((638, 647, 390, 45), "KICKBACK / FLIPPER", lambda: self.choose_preset("Kickback"), TEAL)
         elif self.modal == "save":
             p.text("Name your invention.", (230, 155), 34, INK, True)
             p.wrap("Blueprints save as editable, versioned JSON in the saves folder. Saving the same name replaces that saved draft.", (230, 218), 740, 19, MUTED, 28)
@@ -730,7 +756,7 @@ def main():
     parser = argparse.ArgumentParser(description="ScrapLab desktop robot workshop")
     parser.add_argument("--no-intro", action="store_true")
     parser.add_argument("--benchmark", action="store_true")
-    parser.add_argument("--preset", choices=["Tall order", "Low rider", "Forklift", "Blank"])
+    parser.add_argument("--preset", choices=["Tall order", "Low rider", "Forklift", "Blank", "Whirlwind", "Kickback"])
     parser.add_argument("--practice", action="store_true", help="Open the manual arm practice bay")
     parser.add_argument("--no-recovery", action="store_true", help="Do not read/write the recovery draft (preview/testing)")
     parser.add_argument("--frames", type=int, help="Exit after N frames (smoke test)")

@@ -2,7 +2,8 @@
 from dataclasses import dataclass
 import math
 import pymunk as pm
-from .parts import CATALOG, mass, centroid, vertices, dimensions, anchor
+from .parts import CATALOG, WEAPONS, mass, centroid, vertices, dimensions, anchor
+from .battle import BattleScore
 from .blueprint import validate, preset
 from .scenarios import RAMP, BENCHMARK_SECONDS, benchmark_controls, opponent_controls
 from .telemetry import Telemetry
@@ -66,7 +67,7 @@ class Robot:
             if joint in ("motor", "pivot"):
                 limit = pm.RotaryLimitJoint(self.body, body, math.radians(-65), math.radians(100))
                 space.add(limit)
-            if joint in ("axle", "motor"):
+            if joint in ("axle", "motor", "rotor"):
                 motor = pm.SimpleMotor(self.body, body, 0)
                 motor.max_force = 0
                 space.add(motor)
@@ -100,7 +101,7 @@ class Robot:
 class Simulation:
     dt = DT
 
-    def __init__(self, bp, scenario="test", airborne=False):
+    def __init__(self, bp, scenario="test", airborne=False, opponent_name="Copperhead"):
         self.blueprint = bp.clone()
         self.scenario = scenario
         self.space = pm.Space()
@@ -116,7 +117,13 @@ class Simulation:
         self.practice_lowered = False
         self.knockout = [0., 0.]
         self.opponent = None
-        self.space.on_collision(None, None, post_solve=self._collision)
+        self.opponent_name = opponent_name
+        self.ai_probe_time, self.ai_probe_x, self.ai_backoff_until = 2., 3., 0.
+        self.battle = BattleScore()
+        self.winner = None
+        self._incoming = {}
+        self._weapon_shapes = set()
+        self.space.on_collision(None, None, pre_solve=self._before_collision, post_solve=self._collision)
         if scenario == "arena":
             self.segment((-6, 0), (6, 0), .08)
         elif scenario == "practice":
@@ -136,13 +143,14 @@ class Simulation:
         x = -3 if scenario == "arena" else 0
         self.robot = Robot(self.space, bp, (x, -bottom+.09+(20 if airborne else 0)), 1)
         if scenario == "arena":
-            rival = preset("Copperhead")
+            rival = preset(opponent_name)
             # Mirror all blueprint geometry, retaining identical mechanics.
             for p in rival.parts:
                 p.x = -p.x
-                if p.kind in {"wedge", "arm", "pivot"}:
+                if p.kind in {"wedge", "arm", "pivot", "flipper"}:
                     p.angle = 180-p.angle
             self.opponent = Robot(self.space, rival, (3, .65), 2)
+            self._weapon_shapes = {v.shape for robot in (self.robot, self.opponent) for v in robot.visuals if v.part.kind in WEAPONS}
         self.telemetry = Telemetry(bp.name, scenario, self.robot.com.x)
 
     def segment(self, a, b, radius=.035):
@@ -160,6 +168,23 @@ class Simulation:
         self.space.add(body, shape)
         self.props.append((shape, weight))
 
+    def _before_collision(self, arbiter, space, data):
+        a, b = arbiter.shapes
+        if self.scenario != "arena" or {a.collision_type, b.collision_type} != {1, 2} or not arbiter.is_first_contact:
+            return
+        points = arbiter.contact_point_set.points
+        if not points:
+            return
+        point = (points[0].point_a+points[0].point_b)/2
+        velocities = []
+        for shape in (a, b):
+            radius = point-shape.body.position
+            velocities.append(shape.body.velocity + pm.Vec2d(-radius.y, radius.x)*shape.body.angular_velocity)
+        normal = arbiter.normal
+        approach = (velocities[0]-velocities[1]).dot(normal)
+        contributions = [max(0, velocities[0].dot(normal)), max(0, -velocities[1].dot(normal))]
+        self._incoming[(a, b)] = (approach, contributions)
+
     def _collision(self, arbiter, space, data):
         impulse = arbiter.total_impulse.length
         points = arbiter.contact_point_set.points
@@ -169,11 +194,19 @@ class Simulation:
                 self.contacts.append((pos, impulse/self.dt))
             if arbiter.is_first_contact and impulse > 2:
                 self.impacts.append((self.time, pos, min(impulse, 60)))
+            incoming = self._incoming.pop(tuple(arbiter.shapes), None)
+            if incoming:
+                approach, contributions = incoming
+                for i, shape in enumerate(arbiter.shapes):
+                    if contributions[i] >= .4 and contributions[i] >= max(contributions)*.85:
+                        self.battle.impact(self.time, shape.collision_type-1, impulse, approach,
+                                           shape in self._weapon_shapes, pos)
 
     def step(self, controls=None):
         if self.result:
             return
         self.contacts = []
+        self._incoming.clear()
         controls = controls or {"drive": 0, "arm": 0}
         if self.scenario == "benchmark":
             controls = benchmark_controls(self.time)
@@ -202,26 +235,34 @@ class Simulation:
             self.accumulator -= self.dt
 
     def _arena_result(self):
+        if self.time < 2:
+            return
         losses = []
         for i, robot in enumerate((self.robot, self.opponent)):
             tilt = abs(math.atan2(math.sin(robot.body.angle), math.cos(robot.body.angle)))
             self.knockout[i] = self.knockout[i]+self.dt if tilt > math.radians(100) else 0
             losses.append(robot.com.y < -2 or self.knockout[i] >= 3)
         if all(losses):
-            self.result = "DRAW / DOUBLE RING-OUT"
+            self.result = "DRAW / DOUBLE KNOCKOUT"
             self.result_reason = "Both robots met the loss condition on the same physics step."
         elif losses[0]:
-            self.result = "COPPERHEAD WINS"
+            self.winner = 1
+            self.result = self.opponent_name.upper() + " WINS"
             self.result_reason = "Your robot fell below the arena." if self.robot.com.y < -2 else "Your chassis stayed overturned for 3 seconds."
         elif losses[1]:
+            self.winner = 0
             self.result = "YOU WIN"
-            self.result_reason = "Copperhead fell below the arena." if self.opponent.com.y < -2 else "Copperhead stayed overturned for 3 seconds."
+            self.result_reason = f"{self.opponent_name} fell below the arena." if self.opponent.com.y < -2 else f"{self.opponent_name} stayed overturned for 3 seconds."
         elif self.time >= 47:
-            self.result = "DRAW / TIME LIMIT"
-            self.result_reason = "Both robots survived the 45-second match."
+            a, b = self.battle.points
+            self.winner = 0 if a > b else 1 if b > a else None
+            self.result = "YOU WIN" if a > b else self.opponent_name.upper()+" WINS" if b > a else "DRAW / LEVEL ON POINTS"
+            self.result_reason = f"Time! Impact points decide the match: {a} to {b}."
+        if self.result:
+            self.battle.finish(self.winner, self.time, knockout=any(losses))
 
     def _practice_progress(self):
-        arms = [(p, m) for p, m in self.robot.motors if p.kind == "arm"]
+        arms = [(p, m) for p, m in self.robot.motors if p.kind in WEAPONS]
         if not arms or self.telemetry.complete:
             return
         _, motor = arms[0]

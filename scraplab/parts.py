@@ -33,7 +33,11 @@ CATALOG = {
     "wedge": Spec("Wedge", .90, .50, 28, (235, 180, 88), description="Triangular contact geometry pushes and lifts."),
     "arm": Spec("Powered lifter", 1.35, .16, 28, (237, 166, 89), "motor", "Left end is a motor pivot. Q / E to swing."),
     "pivot": Spec("Passive arm", 1.1, .14, 12, (178, 160, 219), "pivot", "Free hinge at left end; gravity can swing it."),
+    "flipper": Spec("Power flipper", .96, .26, 42, (116, 202, 240), "motor", "Short, strong lifting paddle. E raises; Q resets."),
+    "spinner": Spec("Spinner bar", 1.18, .20, 65, (238, 115, 141), "rotor", "Centre-mounted weapon. Hold E to spin; Q reverses."),
 }
+
+WEAPONS = {"arm", "flipper", "spinner"}
 
 
 def rotate(point, angle):

@@ -164,6 +164,16 @@ def preset(name="Tall order"):
             Part("wheel", -.70, -.10, torque=55), Part("wheel", .70, -.10, torque=55),
             Part("battery", 0, 2.40 if name == "Tall order" else .38),
         ])
+    if name == "Whirlwind":
+        return Blueprint(name, [Part("plate"),
+            Part("big_wheel", -.92, -.08, torque=35), Part("big_wheel", .92, -.08, torque=35),
+            Part("battery", -.45, .34), Part("beam", 1.18, .18),
+            Part("spinner", 1.65, .18, torque=50, speed=10, control="arm")])
+    if name == "Kickback":
+        return Blueprint(name, [Part("plate"),
+            Part("big_wheel", -.92, -.08, torque=30), Part("big_wheel", .92, -.08, torque=30),
+            Part("battery", -.40, .34), Part("wedge", 1.38, .02, scale=.7),
+            Part("flipper", 1.50, .04, torque=60, speed=4, control="arm")])
     return Blueprint("Forklift" if name == "Forklift" else "Copperhead", [
         Part("plate"), Part("big_wheel", -.92, -.08, torque=40), Part("big_wheel", .92, -.08, torque=40),
         Part("battery", -.25, .34),

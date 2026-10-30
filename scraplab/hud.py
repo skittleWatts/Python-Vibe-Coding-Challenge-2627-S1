@@ -2,6 +2,8 @@
 import math
 import pygame as pg
 from .feedback import arm_feedback
+from .parts import WEAPONS
+from .battle_ui import draw_battle_score
 from .render import (grid, scenery, draw_robot, impacts, BG, PANEL, PANEL2,
                      LINE, INK, MUTED, TEAL, GOLD, RED)
 from .scenarios import BENCHMARK_SECONDS
@@ -16,7 +18,7 @@ def draw_simulation(app):
     manual = not auto and not app.paused and not sim.result and not (arena and sim.time < 2)
     title = "The Crucible" if arena else "Arm practice bay" if practice else "Repeatable ramp test" if auto else "Open test ground"
     p.text(title, (24, 91), 28, INK, True)
-    subtitle = "45-SECOND MATCH  /  RING-OUT OR 3s OVERTURNED" if arena else "LEARN THE LINKAGE  /  YOUR CONTROLS, REAL PHYSICS" if practice else "AUTOMATIC BENCHMARK  /  MANUAL INPUT IS DISABLED" if auto else "FREE PLAY  /  A & D DRIVE  /  E & Q OR UP & DOWN OPERATE ARMS"
+    subtitle = "HIT FOR POINTS  /  RING-OUT OR 3s OVERTURNED TO FINISH" if arena else "LEARN THE LINKAGE  /  YOUR CONTROLS, REAL PHYSICS" if practice else "AUTOMATIC BENCHMARK  /  MANUAL INPUT IS DISABLED" if auto else "FREE PLAY  /  A & D DRIVE  /  E & Q OR UP & DOWN OPERATE ARMS"
     p.text(subtitle, (25, 134), 11, GOLD if auto else MUTED, True)
     app.button((630, 99, 100, 35), "EDIT  ESC", app.workshop, TEAL)
     app.button((740, 99, 98, 35), "RESET  R", app.reset)
@@ -45,11 +47,8 @@ def draw_simulation(app):
             p.text(("DONE" if sim.practice_raised else "01") + "   Rotate past +45 deg (E / Up)", (663, 231), 14, TEAL if sim.practice_raised else INK)
             p.text(("DONE" if sim.practice_lowered else "02") + "   Rotate below -25 deg (Q / Down)", (663, 253), 14, TEAL if sim.practice_lowered else INK)
         elif arena:
-            p.panel((392, 195, 216, 54), PANEL, GOLD, 9)
-            p.text(f"{min(45, max(0, 47-sim.time)):04.1f} s", (500, 214), 23, GOLD, True, True)
-            p.text("MATCH CLOCK", (500, 237), 10, MUTED, True, True)
             p.panel((726, 195, 256, 76), PANEL, LINE, 9)
-            p.text("YOU   vs   COPPERHEAD", (742, 207), 14, INK, True)
+            p.text("KNOCKOUT / 3s OVERTURNED", (742, 207), 12, INK, True)
             p.text(f"Overturned   {sim.knockout[0]:.1f} / {sim.knockout[1]:.1f} s", (742, 234), 14, MUTED)
             for x, timer, color in ((742, sim.knockout[0], TEAL), (856, sim.knockout[1], RED)):
                 pg.draw.rect(app.surface, BG, (x, 255, 100, 5), border_radius=2)
@@ -76,6 +75,9 @@ def draw_simulation(app):
         app.button((776, 209, 188, 34), "RETRY   R", app.reset, color)
         app.button((776, 254, 188, 34), "EDIT DESIGN   ESC", app.workshop, TEAL)
 
+    if arena:
+        draw_battle_score(app)
+
     # The important numbers stay legible without a wall of tiny telemetry.
     p.panel((1020, 180, 236, 554))
     p.text("LIVE TELEMETRY", (1035, 197), 12, TEAL, True)
@@ -94,7 +96,7 @@ def draw_simulation(app):
         load = motor.impulse/sim.dt
         rate = motor.a.angular_velocity-motor.b.angular_velocity
         y = 386+i*43
-        p.text(("ARM" if part.kind == "arm" else f"AXLE {i+1}") + f"  {load:.1f} / {motor.max_force:.0f} N m", (1035, y), 14, GOLD if motor.max_force > 0 and load >= motor.max_force*.95 else TEAL, True)
+        p.text(("WEAPON" if part.kind in WEAPONS else f"AXLE {i+1}") + f"  {load:.1f} / {motor.max_force:.0f} N m", (1035, y), 13, GOLD if motor.max_force > 0 and load >= motor.max_force*.95 else TEAL, True)
         p.text(f"{rate:+.1f} rad/s   |   {part.control}", (1035, y+19), 11, MUTED)
     if len(motors) > 3:
         p.text(f"Showing 3 of {len(motors)} motors", (1035, 516), 10, MUTED)
@@ -108,7 +110,9 @@ def draw_simulation(app):
         feedback.update(title="ATTEMPT FINISHED", detail="Retry or choose Free Play to take control.", state="idle")
     color = GOLD if feedback["state"] == "warning" else TEAL
     p.panel((1030, 533, 216, 172), (15, 28, 39), color if feedback["state"] == "active" else LINE, 8)
-    p.text("LINKAGE / ARM", (1040, 542), 10, MUTED, True)
+    p.text("WEAPON / ARM", (1040, 542), 10, MUTED, True)
+    if "rpm" in feedback:
+        p.text(f"{feedback['rpm']:.0f} RPM", (1180, 540), 12, color, True)
     if feedback["angle"] is not None:
         p.text(f"{feedback['angle']:+.0f}°", (1200, 540), 12, color, True)
     p.fit_text(feedback["title"], (1040, 561), 198, 16, color, True)
