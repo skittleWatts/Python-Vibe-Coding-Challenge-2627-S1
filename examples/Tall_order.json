@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "name": "Tall order",
+  "parts": [
+    {
+      "kind": "chassis",
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "556bc05997"
+    },
+    {
+      "kind": "long_beam",
+      "x": 0,
+      "y": 1.25,
+      "angle": 90,
+      "scale": 1,
+      "material": "foam",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "ca12d5d74d"
+    },
+    {
+      "kind": "wheel",
+      "x": -0.7,
+      "y": -0.1,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 55,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "203b60462e"
+    },
+    {
+      "kind": "wheel",
+      "x": 0.7,
+      "y": -0.1,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 55,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "2bb7d3b793"
+    },
+    {
+      "kind": "battery",
+      "x": 0,
+      "y": 2.4,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "a09b9ba9a4"
+    }
+  ]
+}

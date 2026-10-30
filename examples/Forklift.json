@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "name": "Forklift",
+  "parts": [
+    {
+      "kind": "plate",
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "12f3e1a4c2"
+    },
+    {
+      "kind": "big_wheel",
+      "x": -0.92,
+      "y": -0.08,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 40,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "11372c013a"
+    },
+    {
+      "kind": "big_wheel",
+      "x": 0.92,
+      "y": -0.08,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 40,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "37cafac2de"
+    },
+    {
+      "kind": "battery",
+      "x": -0.25,
+      "y": 0.34,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "cd10c76489"
+    },
+    {
+      "kind": "wedge",
+      "x": 1.4,
+      "y": 0.04,
+      "angle": 0,
+      "scale": 0.8,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "f917a11c84"
+    },
+    {
+      "kind": "arm",
+      "x": 1.25,
+      "y": 0.18,
+      "angle": 10,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 2,
+      "torque": 30,
+      "direction": 1,
+      "control": "arm",
+      "grip": 1.0,
+      "uid": "9e6da7de64"
+    }
+  ]
+}

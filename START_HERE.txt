@@ -1,0 +1,30 @@
+SCRAPLAB 1.1 - BUILD. BREAK. UNDERSTAND.
+
+PLAY ON THIS COMPUTER
+Double-click launch.cmd in this folder. No chat or internet is needed.
+You can make a desktop shortcut to launch.cmd. Keep the original here.
+
+MOVE THE ARM
+1. In the workshop, choose Examples > Forklift.
+2. Select its powered arm and choose Try in Practice Bay.
+3. Hold E or Up to raise it. Hold Q or Down to lower it.
+   You can click the visible buttons for a nudge, or hold them to move.
+4. Hold A/D or Left/Right to drive. Space pauses/resumes; Esc edits.
+
+The automatic benchmark does not accept manual controls. Choose Free Play.
+Custom arms need a battery, an attached pivot, positive motor settings,
+and the ARM E/Q assignment. A passive arm has no motor.
+The arm status panel explains power, control, load and joint limits.
+
+KEEP YOUR ROBOTS
+The last draft recovers automatically. Ctrl+S saves a named blueprint;
+Ctrl+O loads one. Your named files are in saves/. Export measurements
+from the Lab Notebook before closing if you want to keep them.
+
+NEW COMPUTER OR EXTRACTED ZIP
+Install Python 3.11+ (tested on 3.14.7), run setup.cmd once with internet,
+then launch.cmd. The ZIP contains source, not a portable Windows EXE.
+
+README.md has all controls, setup, physics limits and project details.
+docs/DEMO_SCRIPT.md has a 60-90 second demonstration.
+docs/VALIDATION.md records the checks actually performed.

@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "name": "Low rider",
+  "parts": [
+    {
+      "kind": "chassis",
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "962b52e334"
+    },
+    {
+      "kind": "long_beam",
+      "x": 0,
+      "y": 1.25,
+      "angle": 90,
+      "scale": 1,
+      "material": "foam",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "8489503ed2"
+    },
+    {
+      "kind": "wheel",
+      "x": -0.7,
+      "y": -0.1,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 55,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "6292385acb"
+    },
+    {
+      "kind": "wheel",
+      "x": 0.7,
+      "y": -0.1,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 55,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "d25276d886"
+    },
+    {
+      "kind": "battery",
+      "x": 0,
+      "y": 0.38,
+      "angle": 0,
+      "scale": 1,
+      "material": "alloy",
+      "speed": 5,
+      "torque": 35,
+      "direction": 1,
+      "control": "drive",
+      "grip": 1.0,
+      "uid": "c6a1022070"
+    }
+  ]
+}
